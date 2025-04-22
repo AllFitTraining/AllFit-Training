@@ -74,15 +74,18 @@
 }
     table {
   width: 100%;
-  min-width: 600px; /* permet au tableau de scroller si trop large */
   border-collapse: collapse;
-  margin-top: 20px;
-    }
+  font-size: 0.85rem;  /* Texte légèrement réduit */
+  table-layout: fixed; /* Force les colonnes à s'adapter */
+  word-wrap: break-word;
+}
+
     th, td {
-      border: 1px solid #ddd;
-      padding: 12px;
-      text-align: center;
-    }
+  padding: 10px;
+  text-align: center;
+  border: 1px solid #ddd;
+}
+
     th {
       background-color: var(--accent-color);
       color: #000;
