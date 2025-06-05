@@ -127,6 +127,23 @@ th, td {
   display: block;
   margin: 20px auto;
 }
+    @keyframes clignote-doux {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+.promo-banner.animated {
+  background-color: var(--accent-color);
+  color: #111;
+  text-align: center;
+  padding: 12px 20px;
+  font-weight: 600;
+  font-size: 1rem;
+  border-bottom: 2px solid var(--primary-color);
+  animation: clignote-doux 2s infinite;
+}
+
+
   </style>
     
     <!-- Google tag (gtag.js) -->
@@ -140,6 +157,10 @@ th, td {
 
 </head>
 <body>
+    <div class="promo-banner animated">
+  🔥 Offre de lancement : -5€ sur toutes les formules ! Valable jusqu'au 31 août 2025
+</div>
+
 
   <div class="intro">
         <img src="logo.png" alt="Logo AllFit Training" class="logo">
