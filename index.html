@@ -143,7 +143,6 @@ th, td {
   animation: clignote-doux 2s infinite;
 }
 
-
   </style>
     
     <!-- Google tag (gtag.js) -->
@@ -167,6 +166,74 @@ th, td {
     <h1>Bienvenue chez AllFit Training !</h1>
     <p>Préparation physique personnalisée – La préparation pour toutes les ambitions</p>
   </div>
+    
+<section id="avis" style="display: none;" style="padding: 60px 20px; background-color: #f7f7f7; text-align: center;">
+
+
+  <!-- Formulaire d'avis -->
+  <form id="avis-form" style="max-width: 600px; margin: auto;">
+    <input type="text" id="prenom" placeholder="Prénom" required style="padding:10px; width: 45%; margin: 5px;">
+    <input type="text" id="initiale" maxlength="1" placeholder="Nom (1ère lettre)" required style="padding:10px; width: 45%; margin: 5px;">
+    <select id="note" required style="padding:10px; width: 100%; margin: 5px;">
+      <option value="">Note (sur 5)</option>
+      <option value="5">⭐⭐⭐⭐⭐</option>
+      <option value="4">⭐⭐⭐⭐</option>
+      <option value="3">⭐⭐⭐</option>
+      <option value="2">⭐⭐</option>
+      <option value="1">⭐</option>
+    </select>
+    <textarea id="commentaire" rows="3" placeholder="Votre avis" required style="padding:10px; width: 100%; margin: 5px;"></textarea>
+    <button type="submit" style="padding: 10px 20px; background-color: var(--primary-color); color: white; border: none; cursor: pointer; margin-top: 10px;">Envoyer</button>
+  </form>
+
+  <!-- Liste des avis -->
+  <div id="avis-liste" style="max-width: 600px; margin: 40px auto 0 auto; max-height: 250px; overflow-y: auto; text-align: left; padding: 10px; background: white; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1);">
+    <!-- Avis s'afficheront ici -->
+  </div>
+</section>
+
+<script>
+  const form = document.getElementById("avis-form");
+  const avisListe = document.getElementById("avis-liste");
+
+  function afficherAvis() {
+    const avis = JSON.parse(localStorage.getItem("avisAllFit")) || [];
+    avisListe.innerHTML = "";
+    avis.reverse().forEach(({ prenom, initiale, note, commentaire }) => {
+      const bloc = document.createElement("div");
+      bloc.style.borderBottom = "1px solid #eee";
+      bloc.style.padding = "10px 0";
+      bloc.innerHTML = `<strong>${prenom} ${initiale}. – ${'⭐'.repeat(note)}</strong><br/><em>${commentaire}</em>`;
+      avisListe.appendChild(bloc);
+    });
+  }
+
+  form.addEventListener("submit", function (e) {
+  e.preventDefault();
+  const prenom = document.getElementById("prenom").value.trim();
+  const initiale = document.getElementById("initiale").value.trim().toUpperCase();
+  const note = document.getElementById("note").value;
+  const commentaire = document.getElementById("commentaire").value.trim();
+
+  if (prenom && initiale && note && commentaire) {
+    const avis = JSON.parse(localStorage.getItem("avisAllFit")) || [];
+    avis.push({ prenom, initiale, note, commentaire });
+    localStorage.setItem("avisAllFit", JSON.stringify(avis));
+    form.reset();
+    afficherAvis();
+
+    // Scroll vers la section avis après soumission
+    document.getElementById("avis").scrollIntoView({ behavior: 'smooth' });
+  }
+});
+      localStorage.setItem("avisAllFit", JSON.stringify(avis));
+      form.reset();
+      afficherAvis();
+    }
+  });
+
+  afficherAvis();
+</script>
 
   <section id="a-propos">
     <h2>À propos</h2>
@@ -224,12 +291,62 @@ th, td {
     <p>📧 Email : <a href="mailto:alexis.fontaine@allfittraining.fr">alexis.fontaine@allfittraining.fr</a></p>
     <p>📱 Instagram : <a href="https://instagram.com/_aftraining_" target="_blank">@_aftraining_</a></p>
     <p>📞 Téléphone : 06.20.79.13.81</p>
-  </section>
+
+<div style="text-align: center; margin: 30px 0;">
+  <button onclick="afficherAvisSection()" style="padding: 10px 20px; background-color: var(--accent-color); color: #000; font-weight: bold; border: none; border-radius: 6px; cursor: pointer;">
+    Laisser un avis
+  </button>
+</div>
 
   <footer>
       <p>Alexis Fontaine – SIRET : 989 957 287 00018 – TVA non applicable, art. 293 B du CGI</p>
     &copy; 2025 AllFit Training – Tous droits réservés
-  </footer>
+</footer>
+      
+  </section>
 
+<script>
+  // Affiche la section d'avis quand on clique sur le bouton
+  function afficherAvisSection() {
+    const avisSection = document.getElementById("avis");
+    avisSection.style.display = "block";
+    afficherAvis(); // Charge les avis
+    avisSection.scrollIntoView({ behavior: 'smooth' });
+  }
+
+  // Fonction pour afficher les avis enregistrés
+  function afficherAvis() {
+    const avis = JSON.parse(localStorage.getItem("avisAllFit")) || [];
+    const avisListe = document.getElementById("avis-liste");
+    avisListe.innerHTML = "";
+    avis.reverse().forEach(({ prenom, initiale, note, commentaire }) => {
+      const bloc = document.createElement("div");
+      bloc.style.borderBottom = "1px solid #eee";
+      bloc.style.padding = "10px 0";
+      bloc.innerHTML = `<strong>${prenom} ${initiale}. – ${'⭐'.repeat(note)}</strong><br/><em>${commentaire}</em>`;
+      avisListe.appendChild(bloc);
+    });
+  }
+
+  // Gère la soumission du formulaire
+  document.getElementById("avis-form").addEventListener("submit", function (e) {
+    e.preventDefault();
+    const prenom = document.getElementById("prenom").value.trim();
+    const initiale = document.getElementById("initiale").value.trim().toUpperCase();
+    const note = document.getElementById("note").value;
+    const commentaire = document.getElementById("commentaire").value.trim();
+
+    if (prenom && initiale && note && commentaire) {
+      const avis = JSON.parse(localStorage.getItem("avisAllFit")) || [];
+      avis.push({ prenom, initiale, note, commentaire });
+      localStorage.setItem("avisAllFit", JSON.stringify(avis));
+      this.reset();
+      afficherAvis();
+      document.getElementById("avis").scrollIntoView({ behavior: 'smooth' });
+    }
+  });
+</script>
+    
 </body>
+
 </html>
