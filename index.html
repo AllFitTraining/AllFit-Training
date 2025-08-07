@@ -369,66 +369,65 @@ th, td {
 </script>
     
 <script type="module">
-  import {{ initializeApp }} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import {{
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import {
     getFirestore, collection, addDoc, getDocs, serverTimestamp, query, orderBy
-  }} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+  } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-  const firebaseConfig = {{
+  const firebaseConfig = {
     apiKey: "AIzaSyC-C7eZoAjjbO092lquZkzVvze7B-g1MRM",
     authDomain: "allfit-training.firebaseapp.com",
     projectId: "allfit-training",
-    storageBucket: "allfit-training.firebasestorage.app",
+    storageBucket: "allfit-training.appspot.com",
     messagingSenderId: "932049885868",
     appId: "1:932049885868:web:a505a11cf7cd7f7d69dd09"
-  }};
+  };
 
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
 
   const avisListe = document.getElementById("avis-liste");
   const avisForm = document.getElementById("avis-form");
-  const avisFormSection = document.getElementById("avis-form-section");
 
-  async function chargerAvis() {{
+  // 🔄 Charger les avis au chargement
+  async function chargerAvis() {
     const avisSnapshot = await getDocs(query(collection(db, "avis"), orderBy("timestamp", "desc")));
     avisListe.innerHTML = "";
-    avisSnapshot.forEach(doc => {{
+    avisSnapshot.forEach(doc => {
       const avis = doc.data();
       const bloc = document.createElement("div");
-      bloc.innerHTML = `<strong>${{avis.prenom}} ${{avis.initiale}}. – ${'⭐'.repeat(avis.note)}</strong><br/><em>${{avis.commentaire}}</em>`;
+      bloc.innerHTML = `<strong>${avis.prenom} ${avis.initiale}. – ${'⭐'.repeat(avis.note)}</strong><br/><em>${avis.commentaire}</em>`;
       avisListe.appendChild(bloc);
-    }});
-  }}
+    });
+  }
 
-  document.getElementById("show-avis-form").addEventListener("click", () => {{
-    avisFormSection.style.display = "block";
-    avisFormSection.scrollIntoView({{ behavior: "smooth" }});
-  }});
-
-  avisForm.addEventListener("submit", async (e) => {{
+  // 📤 Soumission du formulaire
+  avisForm.addEventListener("submit", async (e) => {
     e.preventDefault();
-    const prenom = document.getElementById("prenom").value;
-    const initiale = document.getElementById("initiale").value;
+    const prenom = document.getElementById("prenom").value.trim();
+    const initiale = document.getElementById("initiale").value.trim().toUpperCase();
     const note = parseInt(document.getElementById("note").value);
-    const commentaire = document.getElementById("commentaire").value;
+    const commentaire = document.getElementById("commentaire").value.trim();
 
-    if (prenom && initiale && note && commentaire) {{
-      await addDoc(collection(db, "avis"), {{
+    if (prenom && initiale && note && commentaire) {
+      await addDoc(collection(db, "avis"), {
         prenom,
         initiale,
         note,
         commentaire,
         timestamp: serverTimestamp()
-      }});
+      });
       avisForm.reset();
-      avisFormSection.style.display = "none";
       chargerAvis();
-    }}
-  }});
+      // Masquer le formulaire
+      document.getElementById("avis").scrollIntoView({ behavior: 'smooth' });
+    }
+  });
 
-  window.onload = chargerAvis;
+  // Charger les avis dès le chargement de la page
+  window.addEventListener("DOMContentLoaded", chargerAvis);
 </script>
+
   
 </body>
 
