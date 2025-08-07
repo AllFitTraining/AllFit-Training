@@ -195,6 +195,8 @@ th, td {
   <form id="avis-form" style="max-width: 600px; margin: auto;">
     <input type="text" id="prenom" placeholder="Prénom" required style="padding:10px; width: 45%; margin: 5px;">
     <input type="text" id="initiale" maxlength="1" placeholder="Nom (1ère lettre)" required style="padding:10px; width: 45%; margin: 5px;">
+    <input type="number" id="age" min="5" max="99" placeholder="Âge" required style="padding:10px; width: 45%; margin: 5px;">
+    <input type="text" id="sport" placeholder="Sport pratiqué" required style="padding:10px; width: 45%; margin: 5px";>
     <select id="note" required style="padding:10px; width: 100%; margin: 5px;">
       <option value="">Note (sur 5)</option>
       <option value="5">⭐⭐⭐⭐⭐</option>
@@ -204,7 +206,7 @@ th, td {
       <option value="1">⭐</option>
     </select>
     <textarea id="commentaire" rows="3" placeholder="Votre avis" required style="padding:10px; width: 100%; margin: 5px;"></textarea>
-    <button type="submit" style="padding: 10px 20px; background-color: var(--primary-color); color: white; border: none; cursor: pointer; margin-top: 10px;">Envoyer</button>
+    <button type="submit" style="padding: 10px 20px; background-color: var(--accent-color); color: #000; font-weight: bold; border: none; border-radius: 6px; cursor: pointer;">Envoyer</button>
   </form>
 
   <!-- Liste des avis -->
@@ -256,7 +258,152 @@ th, td {
   afficherAvis();
 </script>
 
-  <section id="a-propos">
+  
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AllFit Training – Avis</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #fff;
+      color: #111;
+    }
+    #avis-section {
+      max-width: 900px;
+      margin: auto;
+      padding: 40px 20px;
+    }
+    .avis-container {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    .avis-block {
+      margin: auto;
+      max-width: 600px;
+      width: 100%;
+      text-align: center;
+      padding: 15px;
+      border: 1px solid #eee;
+      border-radius: 10px;
+      background-color: #f9f9f9;
+    }
+    .avis-block strong {
+      font-size: 1.1rem;
+      color: #333;
+    }
+    .avis-block .stars {
+      color: #f2b705;
+      font-size: 1.2rem;
+      margin: 5px 0;
+    }
+    .avis-block em {
+      color: #555;
+      font-style: italic;
+    }
+    #formulaire-avis {
+      display: none;
+      max-width: 600px;
+      margin: 40px auto;
+      text-align: center;
+    }
+    #formulaire-avis input, #formulaire-avis textarea, #formulaire-avis select {
+      width: 100%;
+      margin: 8px 0;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+    button {
+      background-color: #f2b705;
+      color: #000;
+      border: none;
+      padding: 10px 20px;
+      font-weight: bold;
+      border-radius: 6px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+    button:hover {
+      background-color: #e2a800;
+    }
+    #bouton-avis {
+      text-align: center;
+      margin-top: 30px;
+    }
+  </style>
+</head>
+<body>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getFirestore, collection, addDoc, getDocs, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyC-C7eZoAjjbO092lquZkzVvze7B-g1MRM",
+      authDomain: "allfit-training.firebaseapp.com",
+      projectId: "allfit-training",
+      storageBucket: "allfit-training.firebasestorage.app",
+      messagingSenderId: "932049885868",
+      appId: "1:932049885868:web:a505a11cf7cd7f7d69dd09"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    async function chargerAvis() {
+      const avisRef = collection(db, "avis");
+      const snapshot = await getDocs(avisRef);
+      const avisList = document.getElementById("liste-avis");
+      avisList.innerHTML = "";
+
+      snapshot.forEach((doc) => {
+        const avis = doc.data();
+        const bloc = document.createElement("div");
+        bloc.className = "avis-block";
+        bloc.innerHTML = `
+          <div><strong>${avis.prenom} ${avis.initiale}. – ${avis.age} ans – ${avis.sport}</strong></div>
+          <div class="stars">${'⭐'.repeat(avis.note)}</div>
+          <em>“${avis.commentaire}”</em>
+        `;
+        avisList.appendChild(bloc);
+      });
+    }
+
+    window.envoyerAvis = async function() {
+      const prenom = document.getElementById("prenom").value.trim();
+      const initiale = document.getElementById("initiale").value.trim();
+      const age = parseInt(document.getElementById("age").value.trim());
+      const sport = document.getElementById("sport").value.trim();
+      const note = parseInt(document.getElementById("note").value.trim());
+      const commentaire = document.getElementById("commentaire").value.trim();
+
+      if (!prenom || !initiale || !age || !sport || !note || !commentaire) {
+        alert("Merci de remplir tous les champs.");
+        return;
+      }
+
+      await addDoc(collection(db, "avis"), {
+        prenom, initiale, age, sport, note, commentaire, date: serverTimestamp()
+      });
+
+      document.getElementById("formulaire-avis").reset();
+      document.getElementById("formulaire-avis").style.display = "none";
+      chargerAvis();
+    };
+
+    chargerAvis();
+  </script>
+</body>
+</html>
+
+
+<section id="a-propos">
     <h2>À propos</h2>
     <p align="justify"> Je m’appelle <strong>Alexis Fontaine</strong>, j’ai 23 ans et je suis titulaire d’un <strong>Master STAPS – Entraînement & Optimisation de la Performance</strong>.</p>
     <p align="justify"> Passionné par le développement physique et mental des sportifs, j’ai exercé en tant que <strong>préparateur athlétique</strong> auprès des équipes <strong>U16 et U17 nationaux de QRM</strong> (Quevilly-Rouen Métropole), ainsi qu’à l’<strong>AS Trouville-Deauville</strong> en football, notamment avec les <strong>U18</strong> et de manière ponctuelle auprès des <strong>catégories plus jeunes</strong> mais également des <strong>séniors hommes et femmes</strong>.</p>
@@ -369,65 +516,66 @@ th, td {
 </script>
     
 <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import {
+  import {{ initializeApp }} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import {{
     getFirestore, collection, addDoc, getDocs, serverTimestamp, query, orderBy
-  } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+  }} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-  const firebaseConfig = {
+  const firebaseConfig = {{
     apiKey: "AIzaSyC-C7eZoAjjbO092lquZkzVvze7B-g1MRM",
     authDomain: "allfit-training.firebaseapp.com",
     projectId: "allfit-training",
-    storageBucket: "allfit-training.appspot.com",
+    storageBucket: "allfit-training.firebasestorage.app",
     messagingSenderId: "932049885868",
     appId: "1:932049885868:web:a505a11cf7cd7f7d69dd09"
-  };
+  }};
 
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
 
   const avisListe = document.getElementById("avis-liste");
   const avisForm = document.getElementById("avis-form");
+  const avisFormSection = document.getElementById("avis-form-section");
 
-  // 🔄 Charger les avis au chargement
-  async function chargerAvis() {
+  async function chargerAvis() {{
     const avisSnapshot = await getDocs(query(collection(db, "avis"), orderBy("timestamp", "desc")));
     avisListe.innerHTML = "";
-    avisSnapshot.forEach(doc => {
+    avisSnapshot.forEach(doc => {{
       const avis = doc.data();
       const bloc = document.createElement("div");
-      bloc.innerHTML = `<strong>${avis.prenom} ${avis.initiale}. – ${'⭐'.repeat(avis.note)}</strong><br/><em>${avis.commentaire}</em>`;
+      bloc.innerHTML = `<strong>${{avis.prenom}} ${{avis.initiale}}. – ${'⭐'.repeat(avis.note)}</strong><br/><em>${{avis.commentaire}}</em>`;
       avisListe.appendChild(bloc);
-    });
-  }
+    }});
+  }}
 
-  // 📤 Soumission du formulaire
-  avisForm.addEventListener("submit", async (e) => {
+  document.getElementById("show-avis-form").addEventListener("click", () => {{
+    avisFormSection.style.display = "block";
+    avisFormSection.scrollIntoView({{ behavior: "smooth" }});
+  }});
+
+  avisForm.addEventListener("submit", async (e) => {{
     e.preventDefault();
-    const prenom = document.getElementById("prenom").value.trim();
-    const initiale = document.getElementById("initiale").value.trim().toUpperCase();
+    const prenom = document.getElementById("prenom").value;
+    const initiale = document.getElementById("initiale").value;
     const note = parseInt(document.getElementById("note").value);
-    const commentaire = document.getElementById("commentaire").value.trim();
+    const commentaire = document.getElementById("commentaire").value;
 
-    if (prenom && initiale && note && commentaire) {
-      await addDoc(collection(db, "avis"), {
+    if (prenom && initiale && note && commentaire) {{
+      await addDoc(collection(db, "avis"), {{
         prenom,
         initiale,
         note,
         commentaire,
         timestamp: serverTimestamp()
-      });
+      }});
       avisForm.reset();
+      avisFormSection.style.display = "none";
       chargerAvis();
-      // Masquer le formulaire
-      document.getElementById("avis").scrollIntoView({ behavior: 'smooth' });
-    }
-  });
+    }}
+  }});
 
-  // Charger les avis dès le chargement de la page
-  window.addEventListener("DOMContentLoaded", chargerAvis);
+  window.onload = chargerAvis;
 </script>
-
   
 </body>
 
