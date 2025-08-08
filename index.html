@@ -188,11 +188,11 @@ th, td {
     <p>Préparation physique personnalisée – La préparation pour toutes les ambitions</p>
   </div>
     
-<section id="avis" style="display: none;" style="padding: 60px 20px; background-color: #f7f7f7; text-align: center;">
+<section id="avis" style="padding: 60px 20px; background-color: #f7f7f7; text-align: center;">
 
 
   <!-- Formulaire d'avis -->
-  <form id="avis-form" style="max-width: 600px; margin: auto;">
+  <form id="avis-form" style="display:none; max-width: 600px; margin: auto;">
     <input type="text" id="prenom" placeholder="Prénom" required style="padding:10px; width: 45%; margin: 5px;">
     <input type="text" id="initiale" maxlength="1" placeholder="Nom (1ère lettre)" required style="padding:10px; width: 45%; margin: 5px;">
     <input type="number" id="age" min="5" max="99" placeholder="Âge" required style="padding:10px; width: 45%; margin: 5px;">
@@ -298,7 +298,7 @@ th, td {
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getFirestore, collection, addDoc, getDocs, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, getDocs, serverTimestamp, orderBy, query } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyC-C7eZoAjjbO092lquZkzVvze7B-g1MRM",
@@ -328,14 +328,41 @@ th, td {
       await addDoc(collection(db, "avis"), {
         prenom, initiale, age, sport, note, commentaire, date: serverTimestamp()
       });
-
-      document.getElementById("formulaire-avis").reset();
-      document.getElementById("formulaire-avis").style.display = "none";
-      chargerAvis();
+document.getElementById("avis-form").reset();                // réinitialise le formulaire
+document.getElementById("avis-form").style.display = "none"; // cache le formulaire
+const btn = document.getElementById('bouton-laisser-avis');
+if (btn) { btn.textContent = 'Laisser un avis'; btn.setAttribute('aria-expanded','false'); }
+chargerAvis(); // recharge la liste depuis Firestore
     };
 
     chargerAvis();
   </script>
+
+    <script>
+document.addEventListener('DOMContentLoaded', function() {
+  const form = document.getElementById('avis-form');
+  const btn  = document.getElementById('bouton-laisser-avis');
+
+  // sécurité : si le form existe et n'est pas caché, le cacher
+  if (form) form.style.display = form.style.display === 'none' ? 'none' : 'none';
+
+  if (btn && form) {
+    btn.addEventListener('click', function() {
+      if (form.style.display === 'none' || form.style.display === '') {
+        form.style.display = 'block';
+        btn.textContent = 'Fermer le formulaire';
+        btn.setAttribute('aria-expanded','true');
+        // scroll to form
+        form.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      } else {
+        form.style.display = 'none';
+        btn.textContent = 'Laisser un avis';
+        btn.setAttribute('aria-expanded','false');
+      }
+    });
+  }
+});
+</script>
 </body>
 </html>
 
@@ -398,10 +425,11 @@ th, td {
     <p>📞 Téléphone : 06.20.79.13.81</p>
 
 <div style="text-align: center; margin: 30px 0;">
-  <button onclick="afficherAvisSection()" style="padding: 10px 20px; background-color: var(--accent-color); color: #000; font-weight: bold; border: none; border-radius: 6px; cursor: pointer;">
+  <button id="bouton-laisser-avis" type="button" style="padding: 10px 20px; background-color: var(--accent-color); color: #000; font-weight: bold; border: none; border-radius: 6px; cursor: pointer;">
     Laisser un avis
   </button>
 </div>
+
 
   <footer>
       <p>Alexis Fontaine – SIRET : 989 957 287 00018 – TVA non applicable, art. 293 B du CGI</p>
@@ -411,27 +439,10 @@ th, td {
   </section>
 
 <script>
-  // Affiche la section d'avis quand on clique sur le bouton
   function afficherAvisSection() {
-    const avisSection = document.getElementById("avis");
-    avisSection.style.display = "block";
-    afficherAvis(); // Charge les avis
-    avisSection.scrollIntoView({ behavior: 'smooth' });
-  }
+  document.getElementById("avis").style.display = "block";
+}
 
-  // Fonction pour afficher les avis enregistrés
-  function afficherAvis() {
-    const avis = JSON.parse(localStorage.getItem("avisAllFit")) || [];
-    const avisListe = document.getElementById("avis-liste");
-    avisListe.innerHTML = "";
-    avis.reverse().forEach(({ prenom, initiale, note, commentaire }) => {
-      const bloc = document.createElement("div");
-      bloc.style.borderBottom = "1px solid #eee";
-      bloc.style.padding = "10px 0";
-      bloc.innerHTML = `<strong>${prenom} ${initiale}. – ${'⭐'.repeat(note)}</strong><br/><em>${commentaire}</em>`;
-      avisListe.appendChild(bloc);
-    });
-  }
 
   // Gère la soumission du formulaire
   document.getElementById('avis-form').addEventListener('submit', async function(e) {
