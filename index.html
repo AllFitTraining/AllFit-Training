@@ -214,50 +214,6 @@ th, td {
     <!-- Avis s'afficheront ici -->
   </div>
 </section>
-
-<script>
-  const form = document.getElementById("avis-form");
-  const avisListe = document.getElementById("avis-liste");
-
-  function afficherAvis() {
-    const avis = JSON.parse(localStorage.getItem("avisAllFit")) || [];
-    avisListe.innerHTML = "";
-    avis.reverse().forEach(({ prenom, initiale, note, commentaire }) => {
-      const bloc = document.createElement("div");
-      bloc.style.borderBottom = "1px solid #eee";
-      bloc.style.padding = "10px 0";
-      bloc.innerHTML = `<strong>${prenom} ${initiale}. – ${'⭐'.repeat(note)}</strong><br/><em>${commentaire}</em>`;
-      avisListe.appendChild(bloc);
-    });
-  }
-
-  form.addEventListener("submit", function (e) {
-  e.preventDefault();
-  const prenom = document.getElementById("prenom").value.trim();
-  const initiale = document.getElementById("initiale").value.trim().toUpperCase();
-  const note = document.getElementById("note").value;
-  const commentaire = document.getElementById("commentaire").value.trim();
-
-  if (prenom && initiale && note && commentaire) {
-    const avis = JSON.parse(localStorage.getItem("avisAllFit")) || [];
-    avis.push({ prenom, initiale, note, commentaire });
-    localStorage.setItem("avisAllFit", JSON.stringify(avis));
-    form.reset();
-    afficherAvis();
-
-    // Scroll vers la section avis après soumission
-    document.getElementById("avis").scrollIntoView({ behavior: 'smooth' });
-  }
-});
-      localStorage.setItem("avisAllFit", JSON.stringify(avis));
-      form.reset();
-      afficherAvis();
-    }
-  });
-
-  afficherAvis();
-</script>
-
   
 <!DOCTYPE html>
 <html lang="fr">
@@ -356,25 +312,6 @@ th, td {
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    async function chargerAvis() {
-      const avisRef = collection(db, "avis");
-      const snapshot = await getDocs(avisRef);
-      const avisList = document.getElementById("liste-avis");
-      avisList.innerHTML = "";
-
-      snapshot.forEach((doc) => {
-        const avis = doc.data();
-        const bloc = document.createElement("div");
-        bloc.className = "avis-block";
-        bloc.innerHTML = `
-          <div><strong>${avis.prenom} ${avis.initiale}. – ${avis.age} ans – ${avis.sport}</strong></div>
-          <div class="stars">${'⭐'.repeat(avis.note)}</div>
-          <em>“${avis.commentaire}”</em>
-        `;
-        avisList.appendChild(bloc);
-      });
-    }
-
     window.envoyerAvis = async function() {
       const prenom = document.getElementById("prenom").value.trim();
       const initiale = document.getElementById("initiale").value.trim();
@@ -405,7 +342,7 @@ th, td {
 
 <section id="a-propos">
     <h2>À propos</h2>
-    <p align="justify"> Je m’appelle <strong>Alexis Fontaine</strong>, j’ai 23 ans et je suis titulaire d’un <strong>Master STAPS – Entraînement & Optimisation de la Performance</strong>.</p>
+    <p align="justify"> Je m’appelle <strong>Alexis Fontaine</strong>, j’ai 24 ans et je suis titulaire d’un <strong>Master STAPS – Entraînement & Optimisation de la Performance</strong>.</p>
     <p align="justify"> Passionné par le développement physique et mental des sportifs, j’ai exercé en tant que <strong>préparateur athlétique</strong> auprès des équipes <strong>U16 et U17 nationaux de QRM</strong> (Quevilly-Rouen Métropole), ainsi qu’à l’<strong>AS Trouville-Deauville</strong> en football, notamment avec les <strong>U18</strong> et de manière ponctuelle auprès des <strong>catégories plus jeunes</strong> mais également des <strong>séniors hommes et femmes</strong>.</p>
     <p align="justify">Aujourd’hui, je mets mes compétences au service de <strong>tous les profils</strong> et de <strong>tous les âges</strong> : que vous soyez athlète en quête de performance ou simplement motivé à retrouver la forme, <strong>AllFit Training</strong> vous accompagne avec sérieux, écoute et efficacité, <strong>à domicile ou en extérieur</strong>, sur <strong>Deauville et ses alentours</strong>.</p> 
         </section>
@@ -497,85 +434,105 @@ th, td {
   }
 
   // Gère la soumission du formulaire
-  document.getElementById("avis-form").addEventListener("submit", function (e) {
-    e.preventDefault();
-    const prenom = document.getElementById("prenom").value.trim();
-    const initiale = document.getElementById("initiale").value.trim().toUpperCase();
-    const note = document.getElementById("note").value;
-    const commentaire = document.getElementById("commentaire").value.trim();
+  document.getElementById('avis-form').addEventListener('submit', async function(e) {
+  e.preventDefault();
 
-    if (prenom && initiale && note && commentaire) {
-      const avis = JSON.parse(localStorage.getItem("avisAllFit")) || [];
-      avis.push({ prenom, initiale, note, commentaire });
-      localStorage.setItem("avisAllFit", JSON.stringify(avis));
-      this.reset();
-      afficherAvis();
-      document.getElementById("avis").scrollIntoView({ behavior: 'smooth' });
-    }
-  });
+  const prenom = document.getElementById('prenom').value.trim();
+  const nom = document.getElementById('nom').value.trim().charAt(0).toUpperCase() + '.';
+  const age = document.getElementById('age').value.trim();
+  const sport = document.getElementById('sport').value.trim();
+  const note = document.getElementById('note').value;
+  const commentaire = document.getElementById('commentaire').value.trim();
+
+  try {
+    await addDoc(collection(db, "avis"), {
+      prenom,
+      nom,
+      age,
+      sport,
+      note,
+      commentaire,
+      date: serverTimestamp()
+    });
+
+    ajouterAvisDOM(prenom, nom, age, sport, note, commentaire);
+    e.target.reset();
+    alert("Merci pour votre avis !");
+  } catch (error) {
+    console.error("Erreur lors de l'ajout de l'avis :", error);
+  }
+});
+
 </script>
     
 <script type="module">
-  import {{ initializeApp }} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import {{
-    getFirestore, collection, addDoc, getDocs, serverTimestamp, query, orderBy
-  }} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, collection, addDoc, getDocs, serverTimestamp, orderBy, query } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-  const firebaseConfig = {{
-    apiKey: "AIzaSyC-C7eZoAjjbO092lquZkzVvze7B-g1MRM",
-    authDomain: "allfit-training.firebaseapp.com",
-    projectId: "allfit-training",
-    storageBucket: "allfit-training.firebasestorage.app",
-    messagingSenderId: "932049885868",
-    appId: "1:932049885868:web:a505a11cf7cd7f7d69dd09"
-  }};
+const firebaseConfig = {
+  apiKey: "AIzaSyC-C7eZoAjjbO092lquZkzVvze7B-g1MRM",
+  authDomain: "allfit-training.firebaseapp.com",
+  projectId: "allfit-training",
+  storageBucket: "allfit-training.firebasestorage.app",
+  messagingSenderId: "932049885868",
+  appId: "1:932049885868:web:a505a11cf7cd7f7d69dd09"
+};
 
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
 
+// Charger et afficher les avis au démarrage
+async function chargerAvis() {
   const avisListe = document.getElementById("avis-liste");
-  const avisForm = document.getElementById("avis-form");
-  const avisFormSection = document.getElementById("avis-form-section");
+  avisListe.innerHTML = "";
+  const q = query(collection(db, "avis"), orderBy("date", "desc"));
+  const querySnapshot = await getDocs(q);
+  querySnapshot.forEach(doc => {
+    const avis = doc.data();
+    const bloc = document.createElement("div");
+    bloc.innerHTML = `
+      <strong>${avis.prenom} ${avis.initiale}. (${avis.age} ans) – ${avis.sport}</strong><br/>
+      ${'⭐'.repeat(avis.note)}<br/>
+      <em>${avis.commentaire}</em>
+    `;
+    avisListe.appendChild(bloc);
+  });
+}
 
-  async function chargerAvis() {{
-    const avisSnapshot = await getDocs(query(collection(db, "avis"), orderBy("timestamp", "desc")));
-    avisListe.innerHTML = "";
-    avisSnapshot.forEach(doc => {{
-      const avis = doc.data();
-      const bloc = document.createElement("div");
-      bloc.innerHTML = `<strong>${{avis.prenom}} ${{avis.initiale}}. – ${'⭐'.repeat(avis.note)}</strong><br/><em>${{avis.commentaire}}</em>`;
-      avisListe.appendChild(bloc);
-    }});
-  }}
+// Soumettre un avis
+document.getElementById("avis-form").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const prenom = document.getElementById("prenom").value.trim();
+  const initiale = document.getElementById("initiale").value.trim();
+  const age = parseInt(document.getElementById("age").value.trim());
+  const sport = document.getElementById("sport").value.trim();
+  const note = parseInt(document.getElementById("note").value.trim());
+  const commentaire = document.getElementById("commentaire").value.trim();
 
-  document.getElementById("show-avis-form").addEventListener("click", () => {{
-    avisFormSection.style.display = "block";
-    avisFormSection.scrollIntoView({{ behavior: "smooth" }});
-  }});
+  if (!prenom || !initiale || !age || !sport || !note || !commentaire) {
+    alert("Merci de remplir tous les champs.");
+    return;
+  }
 
-  avisForm.addEventListener("submit", async (e) => {{
-    e.preventDefault();
-    const prenom = document.getElementById("prenom").value;
-    const initiale = document.getElementById("initiale").value;
-    const note = parseInt(document.getElementById("note").value);
-    const commentaire = document.getElementById("commentaire").value;
+  await addDoc(collection(db, "avis"), {
+    prenom,
+    initiale,
+    age,
+    sport,
+    note,
+    commentaire,
+    date: serverTimestamp()
+  });
 
-    if (prenom && initiale && note && commentaire) {{
-      await addDoc(collection(db, "avis"), {{
-        prenom,
-        initiale,
-        note,
-        commentaire,
-        timestamp: serverTimestamp()
-      }});
-      avisForm.reset();
-      avisFormSection.style.display = "none";
-      chargerAvis();
-    }}
-  }});
+  e.target.reset();
+  document.getElementById("avis").style.display = "none";
+  chargerAvis();
+});
 
-  window.onload = chargerAvis;
+// Charger les avis dès l'arrivée sur le site
+window.onload = chargerAvis;
 </script>
+
   
 </body>
 
