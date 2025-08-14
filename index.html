@@ -173,6 +173,14 @@ th, td {
   border-radius: 10px;
   background-color: #fff;
 }
+      
+.prix-flip{
+  display:inline-block;
+  font-weight:700;
+  transition:opacity .2s ease, transform .2s ease, color .2s ease;
+}
+.prix-flip.swap{ opacity:0; transform:translateY(-2px); }
+.prix-flip.reduit{ color: red } /* couleur quand -50% */
 
 
   </style>
@@ -189,7 +197,7 @@ th, td {
 </head>
 <body>
     <div class="promo-banner animated">
-  🔥 Offre de lancement : -5€ sur toutes les formules ! Valable jusqu'au 31 août 2025
+  💶 SAP : Bénéficiez d’un crédit ou d’une réduction d’impôt de 50 % sur tous les tarifs !
 </div>
 
 
@@ -391,6 +399,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
   <section id="offres">
     <h2>Offres & Tarifs</h2>
+<p style="margin-top: 20px;" align="justify">
+AllFit Training est déclaré en tant qu’organisme de Services à la Personne (SAP) sous le numéro <strong>SAP/989957287</strong>.  
+Conformément à l’article 199 sexdecies du Code Général des Impôts, vous pouvez bénéficier d’un <strong>crédit ou d’une réduction d’impôt de 50 %</strong> sur les prestations réalisées à domicile, selon les conditions en vigueur.</p>
+<p style="margin-top: 10px;" align="justify"><strong>⚠️ Attention :</strong> Les séances à plusieurs sont effectuées au sein d'une même famille.</p>
+
     <div class="table-container">
      <table>
       <thead>
@@ -404,21 +417,26 @@ document.addEventListener('DOMContentLoaded', function() {
       <tbody>
         <tr>
           <td>1 personne</td>
-          <td>40€</td>
-          <td>35€ /séance</td>
-          <td>30€ /séance</td>
+          <td><span class="prix-flip" data-base="60€" data-reduit="30€"></span></td>
+          <td><span class="prix-flip" data-base="55€" data-reduit="27,50€"></span>/séance</td>
+          <td><span class="prix-flip" data-base="50€" data-reduit="25€"></span>/séance</td>
+
+
         </tr>
         <tr>
           <td>2 personnes</td>
-          <td>35€ /pers.</td>
-          <td>30€ /pers. /séance</td>
-          <td>25€ /pers. /séance</td>
+          <td><span class="prix-flip" data-base="70€" data-reduit="35€"></span></td>
+          <td><span class="prix-flip" data-base="65€" data-reduit="32,50€"></span>/séance</td>
+          <td><span class="prix-flip" data-base="60€" data-reduit="30€"></span>/séance</td>
+
+
         </tr>
         <tr>
           <td>3 personnes</td>
-          <td>30€ /pers.</td>
-          <td>25€ /pers. /séance</td>
-          <td>20€ /pers. /séance</td>
+         <td><span class="prix-flip" data-base="80€" data-reduit="40€"></span></td>
+         <td><span class="prix-flip" data-base="75€" data-reduit="37,50€"></span>/séance</td>
+         <td><span class="prix-flip" data-base="70€" data-reduit="35€"></span>/séance</td>
+
         </tr>
       </tbody>
     </table>
@@ -442,9 +460,13 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
   <footer>
-      <p>Alexis Fontaine – SIRET : 989 957 287 00018 – TVA non applicable, art. 293 B du CGI</p>
+      <p>Alexis Fontaine – SIRET : 989 957 287 00018 – Déclaration SAP : SAP/989957287 – TVA non applicable, art. 293 B du CGI</p>
     &copy; 2025 AllFit Training – Tous droits réservés
 </footer>
+
+      <div style="text-align:center; margin-top:10px;">
+    <img src="SAP.png" alt="Services à la Personne" style="max-width:150px; height:auto;">
+</div>
       
   </section>
 
@@ -554,6 +576,32 @@ document.getElementById("avis-form").addEventListener("submit", async (e) => {
 window.onload = chargerAvis;
 </script>
 
+<script>
+(function(){
+  const prefersReduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  document.querySelectorAll('.prix-flip').forEach(el=>{
+    const base = el.dataset.base, red = el.dataset.reduit;
+    // largeur fixe = longueur du plus long pour éviter le "saut"
+    const maxLen = Math.max(base.length, red.length);
+    el.style.minWidth = (maxLen + 1) + 'ch';
+
+    let showBase = true;
+    el.textContent = base;
+
+    if (prefersReduce) return; // pas d’animation pour les personnes sensibles
+
+    setInterval(()=>{
+      el.classList.add('swap');
+      setTimeout(()=>{
+        showBase = !showBase;
+        el.textContent = showBase ? base : red;
+        el.classList.toggle('reduit', !showBase);
+        el.classList.remove('swap');
+      }, 180);
+    }, 1500);
+  });
+})();
+</script>
   
 </body>
 
